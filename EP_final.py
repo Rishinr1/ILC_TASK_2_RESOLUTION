@@ -1018,7 +1018,7 @@ schema = pa.schema([
 
 export_path = os.path.join(main_folder_path, 'PLT', 'Portfolio', 'GU', f'ILC2024_EUWS_PLA_WI_EP_{country}_EUR_PLT_Portfolio_GU_0.parquet')
 
-process_PLT_lob(parquet_files, export_path)
+process_PLT_portfolio(parquet_files, export_path)
 
 
 # In[ ]:
