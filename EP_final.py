@@ -691,7 +691,7 @@ process_lob_stats(parquet_files, parquet_file_path)
 
 
 parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Lob', 'GR', f'ILC2024_EUWS_PLA_WI_EP_{country}_EUR_STATS_Lob_GR_0.parquet')
-process_lob_stats(parquet_files, parquet_file_path)
+process_lob_stats(parquet_files_gr, parquet_file_path)
 
 
 # In[ ]:
