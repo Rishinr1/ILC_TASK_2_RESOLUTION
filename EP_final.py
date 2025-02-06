@@ -1032,7 +1032,7 @@ process_PLT_portfolio(parquet_files, export_path)
 
 export_path = os.path.join(main_folder_path, 'PLT', 'Portfolio', 'GR', f'ILC2024_EUWS_PLA_WI_EP_{country}_EUR_PLT_Portfolio_GR_0.parquet')
 
-process_PLT_lob(parquet_files_gr, export_path)
+process_PLT_portfolio(parquet_files_gr, export_path)
 
 
 #updates made after here 
