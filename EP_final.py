@@ -691,7 +691,7 @@ process_lob_stats(parquet_files, parquet_file_path)
 
 
 parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Lob', 'GR', f'ILC2024_EUWS_PLA_WI_EP_{country}_EUR_STATS_Lob_GR_0.parquet')
-process_lob_stats(parquet_files, parquet_file_path)
+process_lob_stats(parquet_files_gr, parquet_file_path)
 
 
 # In[ ]:
@@ -1018,7 +1018,7 @@ schema = pa.schema([
 
 export_path = os.path.join(main_folder_path, 'PLT', 'Portfolio', 'GU', f'ILC2024_EUWS_PLA_WI_EP_{country}_EUR_PLT_Portfolio_GU_0.parquet')
 
-process_PLT_lob(parquet_files, export_path)
+process_PLT_portfolio(parquet_files, export_path)
 
 
 # In[ ]:
@@ -1032,7 +1032,7 @@ process_PLT_lob(parquet_files, export_path)
 
 export_path = os.path.join(main_folder_path, 'PLT', 'Portfolio', 'GR', f'ILC2024_EUWS_PLA_WI_EP_{country}_EUR_PLT_Portfolio_GR_0.parquet')
 
-process_PLT_lob(parquet_files_gr, export_path)
+process_PLT_portfolio(parquet_files_gr, export_path)
 
 
 #updates made after here 
