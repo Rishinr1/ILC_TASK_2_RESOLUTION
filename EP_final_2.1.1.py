@@ -2544,6 +2544,8 @@ print(f"Process finished in {elapsed_time:.2f} minutes")
 
 delete_folder_and_files(partial_folder_path)
 delete_folder_and_files(concatenated_folder_path)
+delete_folder_and_files(resolution_folder_path)
+delete_folder_and_files(resolution_folder_path_gr)
 delete_folder_and_files(processing_folder_path)
 
 

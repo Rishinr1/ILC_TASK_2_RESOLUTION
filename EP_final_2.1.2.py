@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
 
 
 import os
@@ -19,12 +15,9 @@ import time
 import sqlalchemy as sa
 import pyodbc
 import concurrent.futures
-
 import re
 
 
-
-# In[2]:
 
 
 start_time = time.time()  # Start time
@@ -37,12 +30,8 @@ def flush_cache():
 flush_cache()
 
 
-# In[3]:
-
-
 output_folder_path = input("Enter the output folder path: ")
 folder_path = r'D:\RISHIN\13_ILC_resolution\input\PARQUET_FILES'
-proj=input("Enter the project file name: like NZFL_EP_PLA_NZD_EP")
 
 
 
@@ -57,6 +46,8 @@ folder_path_gr = r'D:\RISHIN\13_ILC_TASK\input\PARQUET_FILES_GR'
 
 speriod=int(input("Enter the simulation period: "))
 samples=int(input("Enter the number of samples: "))
+proname=(input("enter file suffix example : example ILC2024_NZFL_EP_PLA"))
+region=input("enter region example : example NZD")
 
 
 # In[6]:
@@ -112,7 +103,7 @@ if parquet_files:
         
         
         # Define the main folder path
-        main_folder_path = os.path.join(output_folder_path, f'{proj}_NZD_Losses')
+        main_folder_path = os.path.join(output_folder_path, f'{proname}_{region}_Losses')
         
         # Define subfolders
         subfolders = ['EP', 'PLT', 'STATS']
@@ -147,7 +138,7 @@ else:
 # In[13]:
 
 
-main_folder_path = os.path.join(output_folder_path, f'{proj}_NZD_Losses')
+main_folder_path = os.path.join(output_folder_path, f'{proname}_{region}_Losses')
 
 processing_folder_path = os.path.join(main_folder_path, 'processing')
 resolution_folder_path = os.path.join(processing_folder_path, 'Resolution Added')
@@ -214,7 +205,7 @@ def process_parquet_files(folder_path, output_folder, server, database, batch_si
                 future.result()
 
 server = 'localhost'
-database = 'IED2024_BE_PC_MIX_EDM230_ILC_LOB_UPDATE_20240905'
+database = 'IED2024_EUWS_PC_MIX_EDM230_ILC_LOB_UPDATE_20240905'
 process_parquet_files(folder_path, resolution_folder_path, server, database)
 
 
@@ -399,13 +390,13 @@ def process_parquet_files_2(parquet_files, filter_string, lob_id, speriod, sampl
 
     
 
-parquet_file_path_AUTO = f'{proj}_Admin1_Lob_GU_1.parquet'
-parquet_file_path_AGR =  f'{proj}_Admin1_Lob_GU_0.parquet'
-parquet_file_path_COM =  f'{proj}_Admin1_Lob_GU_2.parquet'
-parquet_file_path_IND =  f'{proj}_Admin1_Lob_GU_3.parquet'
-parquet_file_path_SPER =  f'{proj}_Admin1_Lob_GU_4.parquet'
-parquet_file_path_FRST=  f'{proj}_Admin1_Lob_GU_5.parquet'
-parquet_file_path_GLH = f'{proj}_Admin1_Lob_GU_6.parquet'
+parquet_file_path_AUTO = f'{proname}_EP_Admin1_Lob_GU_1.parquet'
+parquet_file_path_AGR =  f'{proname}_EP_Admin1_Lob_GU_0.parquet'
+parquet_file_path_COM =  f'{proname}_EP_Admin1_Lob_GU_2.parquet'
+parquet_file_path_IND =  f'{proname}_EP_Admin1_Lob_GU_3.parquet'
+parquet_file_path_SPER =  f'{proname}_EP_Admin1_Lob_GU_4.parquet'
+parquet_file_path_FRST=  f'{proname}_EP_Admin1_Lob_GU_5.parquet'
+parquet_file_path_GLH = f'{proname}_EP_Admin1_Lob_GU_6.parquet'
 
 rps_values = [10000, 5000, 1000, 500, 250, 200, 100, 50, 25, 10, 5, 2]
 
@@ -454,13 +445,13 @@ except (NameError, AttributeError,ValueError) as e:
     print(f"Error processing GLH: {e}")
     pass
 
-parquet_file_path_AUTO = f'{proj}_Admin1_Lob_GR_1.parquet'
-parquet_file_path_AGR =  f'{proj}_Admin1_Lob_GR_0.parquet'
-parquet_file_path_COM =  f'{proj}_Admin1_Lob_GR_2.parquet'
-parquet_file_path_IND =  f'{proj}_Admin1_Lob_GR_3.parquet'
-parquet_file_path_SPER =  f'{proj}_Admin1_Lob_GR_4.parquet'
-parquet_file_path_FRST=  f'{proj}_Admin1_Lob_GR_5.parquet'
-parquet_file_path_GLH = f'{proj}_Admin1_Lob_GR_6.parquet'
+parquet_file_path_AUTO = f'{proname}_EP_Admin1_Lob_GR_1.parquet'
+parquet_file_path_AGR =  f'{proname}_EP_Admin1_Lob_GR_0.parquet'
+parquet_file_path_COM =  f'{proname}_EP_Admin1_Lob_GR_2.parquet'
+parquet_file_path_IND =  f'{proname}_EP_Admin1_Lob_GR_3.parquet'
+parquet_file_path_SPER =  f'{proname}_EP_Admin1_Lob_GR_4.parquet'
+parquet_file_path_FRST=  f'{proname}_EP_Admin1_Lob_GR_5.parquet'
+parquet_file_path_GLH = f'{proname}_EP_Admin1_Lob_GR_6.parquet'
 
 #for GR
 try:
@@ -647,7 +638,7 @@ def process_parquet_files_Port_2(parquet_files, speriod, samples, rps_values,Cat
         #FOR GU
 
         export_path =os.path.join(main_folder_path,'EP','Admin1',Cat)
-        parquet_file_path = os.path.join(export_path,f'{proj}_Admin1_{Cat}_{idx}.parquet')
+        parquet_file_path = os.path.join(export_path,f'{proname}_EP_Admin1_{Cat}_{idx}.parquet')
         pq.write_table(table, parquet_file_path)
         print(f"Parquet file saved successfully at {parquet_file_path}")
 
@@ -833,13 +824,13 @@ def process_parquet_files_EP_Cresta_lob_2(parquet_files, filter_string, lob_id, 
 
 
 
-parquet_file_path_AUTO =  f'{proj}_Cresta_Lob_GU_1.parquet'
-parquet_file_path_AGR = f'{proj}_Cresta_Lob_GU_0.parquet'
-parquet_file_path_COM = f'{proj}_Cresta_Lob_GU_2.parquet'
-parquet_file_path_IND = f'{proj}_Cresta_Lob_GU_3.parquet'
-parquet_file_path_SPER = f'{proj}_Cresta_Lob_GU_4.parquet'
-parquet_file_path_FRST= f'{proj}_Cresta_Lob_GU_5.parquet'
-parquet_file_path_GLH = f'{proj}_Cresta_Lob_GU_6.parquet'
+parquet_file_path_AUTO =  f'{proname}_EP_Cresta_Lob_GU_1.parquet'
+parquet_file_path_AGR = f'{proname}_EP_Cresta_Lob_GU_0.parquet'
+parquet_file_path_COM = f'{proname}_EP_Cresta_Lob_GU_2.parquet'
+parquet_file_path_IND = f'{proname}_EP_Cresta_Lob_GU_3.parquet'
+parquet_file_path_SPER = f'{proname}_EP_Cresta_Lob_GU_4.parquet'
+parquet_file_path_FRST= f'{proname}_EP_Cresta_Lob_GU_5.parquet'
+parquet_file_path_GLH = f'{proname}_EP_Cresta_Lob_GU_6.parquet'
 
 rps_values = [10000, 5000, 1000, 500, 250, 200, 100, 50, 25, 10, 5, 2]
 
@@ -898,13 +889,13 @@ except (NameError, AttributeError,ValueError) as e:
 
 
 
-parquet_file_path_AUTO =  f'{proj}_Cresta_Lob_GR_1.parquet'
-parquet_file_path_AGR = f'{proj}_Cresta_Lob_GR_0.parquet'
-parquet_file_path_COM = f'{proj}_Cresta_Lob_GR_2.parquet'
-parquet_file_path_IND = f'{proj}_Cresta_Lob_GR_3.parquet'
-parquet_file_path_SPER = f'{proj}_Cresta_Lob_GR_4.parquet'
-parquet_file_path_FRST= f'{proj}_Cresta_Lob_GR_5.parquet'
-parquet_file_path_GLH = f'{proj}_Cresta_Lob_GR_6.parquet'
+parquet_file_path_AUTO =  f'{proname}_EP_Cresta_Lob_GR_1.parquet'
+parquet_file_path_AGR = f'{proname}_EP_Cresta_Lob_GR_0.parquet'
+parquet_file_path_COM = f'{proname}_EP_Cresta_Lob_GR_2.parquet'
+parquet_file_path_IND = f'{proname}_EP_Cresta_Lob_GR_3.parquet'
+parquet_file_path_SPER = f'{proname}_EP_Cresta_Lob_GR_4.parquet'
+parquet_file_path_FRST= f'{proname}_EP_Cresta_Lob_GR_5.parquet'
+parquet_file_path_GLH = f'{proname}_EP_Cresta_Lob_GR_6.parquet'
 
 
 
@@ -1093,7 +1084,7 @@ def process_parquet_files_Port_EP_Cresta_2(parquet_files, speriod, samples, rps_
         #FOR GU
 
         export_path =os.path.join(main_folder_path,'EP','Cresta',Cat)
-        parquet_file_path = os.path.join(export_path,f'{proj}_Cresta_{Cat}_{idx}.parquet')
+        parquet_file_path = os.path.join(export_path,f'{proname}_EP_Cresta_{Cat}_{idx}.parquet')
         pq.write_table(table, parquet_file_path)
         print(f"Parquet file saved successfully at {parquet_file_path}")
 
@@ -1243,14 +1234,14 @@ def process_lob_stats_Admin1_Lob(parquet_files, parquet_file_path):
 
 
 
-parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Admin1_Lob', 'GU', f'{proj}_Admin1_Lob_GU_0.parquet')
+parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Admin1_Lob', 'GU', f'{proname}_STATS_Admin1_Lob_GU_0.parquet')
 process_lob_stats_Admin1_Lob(parquet_files_grp, parquet_file_path)
 
 
 #LOB GR STATS
 
 
-parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Admin1_Lob', 'GR', f'{proj}_Admin1_Lob_GR_0.parquet')
+parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Admin1_Lob', 'GR', f'{proname}_STATS_Admin1_Lob_GR_0.parquet')
 process_lob_stats_Admin1_Lob(parquet_files_grp_gr, parquet_file_path)
 
 
@@ -1328,14 +1319,14 @@ def process_portfolio_stats_Admin1(parquet_files, export_path):
 
 #GU
 
-parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Admin1', 'GU', f'{proj}_PLA_WI_EP_{country}_EUR_STATS_Admin1_GU_0.parquet')
+parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Admin1', 'GU', f'{proname}_STATS_Admin1_GU_0.parquet')
 process_portfolio_stats_Admin1(parquet_files_grp, parquet_file_path)
 
 #GR.
 
 
 
-parquet_file_path_gr = os.path.join(main_folder_path, 'STATS', 'Admin1', 'GR', f'{proj}_PLA_WI_EP_{country}_EUR_STATS_Admin1_GR_0.parquet')
+parquet_file_path_gr = os.path.join(main_folder_path, 'STATS', 'Admin1', 'GR', f'{proname}_STATS_Admin1_GR_0.parquet')
 process_portfolio_stats_Admin1(parquet_files_grp_gr, parquet_file_path_gr)
 
 
@@ -1372,9 +1363,6 @@ flush_cache()
 #     print("Memory cleanup completed.")
 
 
-# In[66]:
-
-
 # clean()
 
 
@@ -1394,6 +1382,7 @@ delete_folder_and_files(concatenated_folder_path)
 def process_lob_stats_Cresta_Lob(parquet_files, parquet_file_path):
     partial_folder_path = os.path.join(processing_folder_path, 'partial')
     os.makedirs(partial_folder_path, exist_ok=True)
+    aggregated_tables_lob_stats = []
 
     # Define the mapping of LobName to LobId
     lobname_to_lobid = {
@@ -1485,7 +1474,7 @@ def process_lob_stats_Cresta_Lob(parquet_files, parquet_file_path):
 # In[92]:
 
 
-parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Cresta_Lob', 'GU', f'{proj}_PLA_WI_EP_{country}_EUR_STATS_Cresta_Lob_GU_0.parquet')
+parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Cresta_Lob', 'GU', f'{proname}_STATS_Cresta_Lob_GU_0.parquet')
 process_lob_stats_Cresta_Lob(parquet_files_grp, parquet_file_path)
 
 
@@ -1496,7 +1485,7 @@ process_lob_stats_Cresta_Lob(parquet_files_grp, parquet_file_path)
 
 
 
-parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Cresta_Lob', 'GR', f'{proj}_PLA_WI_EP_{country}_EUR_STATS_Cresta_Lob_GR_0.parquet')
+parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Cresta_Lob', 'GR', f'{proname}_STATS_Cresta_Lob_GR_0.parquet')
 process_lob_stats_Cresta_Lob(parquet_files_grp_gr, parquet_file_path)
 
 
@@ -1570,14 +1559,14 @@ def process_portfolio_stats_Cresta(parquet_files, export_path):
 
 #GU
 
-parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Cresta', 'GU', f'{proj}_PLA_WI_EP_{country}_EUR_STATS_Cresta_GU_0.parquet')
+parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Cresta', 'GU', f'{proname}_STATS_Cresta_GU_0.parquet')
 process_portfolio_stats_Cresta(parquet_files_grp, parquet_file_path)
 
 #GR.
 
 
 
-parquet_file_path_gr = os.path.join(main_folder_path, 'STATS', 'Cresta', 'GR', f'{proj}_PLA_WI_EP_{country}_EUR_STATS_Cresta_GR_0.parquet')
+parquet_file_path_gr = os.path.join(main_folder_path, 'STATS', 'Cresta', 'GR', f'{proname}_STATS_Cresta_GR_0.parquet')
 process_portfolio_stats_Cresta(parquet_files_grp_gr, parquet_file_path_gr)
 
 
@@ -1727,13 +1716,13 @@ def process_parquet_files_EP_lob(parquet_files, export_path, filter_string, lob_
 
 
 export_path =os.path.join(main_folder_path, 'EP', 'Lob','GU')
-parquet_file_path_AUTO = os.path.join(export_path, f'{proj}Lob_GU_1.parquet')
-parquet_file_path_AGR = os.path.join(export_path, f'{proj}Lob_GU_0.parquet')
-parquet_file_path_COM = os.path.join(export_path, f'{proj}Lob_GU_2.parquet')
-parquet_file_path_IND = os.path.join(export_path, f'{proj}Lob_GU_3.parquet')
-parquet_file_path_SPER = os.path.join(export_path, f'{proj}Lob_GU_4.parquet')
-parquet_file_path_FRST= os.path.join(export_path, f'{proj}Lob_GU_5.parquet')
-parquet_file_path_GLH = os.path.join(export_path, f'{proj}Lob_GU_6.parquet')
+parquet_file_path_AUTO = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_1.parquet')
+parquet_file_path_AGR = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_0.parquet')
+parquet_file_path_COM = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_2.parquet')
+parquet_file_path_IND = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_3.parquet')
+parquet_file_path_SPER = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_4.parquet')
+parquet_file_path_FRST= os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_5.parquet')
+parquet_file_path_GLH = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_6.parquet')
 
 rps_values = [10000, 5000, 1000, 500, 250, 200, 100, 50, 25, 10, 5, 2]
 
@@ -1795,13 +1784,13 @@ except (NameError, AttributeError,ValueError) as e:
 
 
 export_path_gr =os.path.join(main_folder_path, 'EP', 'Lob','GR')
-parquet_file_path_AUTO = os.path.join(export_path_gr, f'{proj}Lob_GR_1.parquet')
-parquet_file_path_AGR = os.path.join(export_path_gr, f'{proj}Lob_GR_0.parquet')
-parquet_file_path_COM = os.path.join(export_path_gr, f'{proj}Lob_GR_2.parquet')
-parquet_file_path_IND = os.path.join(export_path_gr, f'{proj}Lob_GR_3.parquet')
-parquet_file_path_SPER = os.path.join(export_path_gr, f'{proj}Lob_GR_4.parquet')
-parquet_file_path_FRST= os.path.join(export_path_gr, f'{proj}Lob_GR_5.parquet')
-parquet_file_path_GLH = os.path.join(export_path_gr, f'{proj}Lob_GR_6.parquet')
+parquet_file_path_AUTO = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_1.parquet')
+parquet_file_path_AGR = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_0.parquet')
+parquet_file_path_COM = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_2.parquet')
+parquet_file_path_IND = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_3.parquet')
+parquet_file_path_SPER = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_4.parquet')
+parquet_file_path_FRST= os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_5.parquet')
+parquet_file_path_GLH = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_6.parquet')
 
 
 
@@ -1980,7 +1969,7 @@ def process_parquet_files_Port(parquet_files, export_path, speriod, samples, rps
 
 
 export_path =os.path.join(main_folder_path, 'EP', 'Portfolio','GU')
-parquet_file_path = os.path.join(export_path, f'{proj}Portfolio_GU_0.parquet')
+parquet_file_path = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Portfolio_GU_0.parquet')
 try:
     process_parquet_files_Port(parquet_files, export_path, speriod, samples, rps_values, parquet_file_path)
 except (NameError, AttributeError,ValueError) as e:
@@ -2001,7 +1990,7 @@ except (NameError, AttributeError,ValueError) as e:
 
 
 export_path_GR =os.path.join(main_folder_path,'EP','Portfolio','GR')
-parquet_file_path_GR = os.path.join(export_path_GR, f'{proj}Portfolio_GR_0.parquet')
+parquet_file_path_GR = os.path.join(export_path_GR, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Portfolio_GR_0.parquet')
 try:
     process_parquet_files_Port(parquet_files_gr, export_path_GR, speriod, samples, rps_values, parquet_file_path_GR)
 except (NameError, AttributeError,ValueError) as e:
@@ -2115,7 +2104,7 @@ def process_lob_stats(parquet_files, parquet_file_path):
 # In[92]:
 
 
-parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Lob', 'GU', f'{proj}_PLA_WI_EP_{country}_EUR_STATS_Lob_GU_0.parquet')
+parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Lob', 'GU', f'{proname}_STATS_Lob_GU_0.parquet')
 process_lob_stats(parquet_files, parquet_file_path)
 
 
@@ -2128,7 +2117,7 @@ process_lob_stats(parquet_files, parquet_file_path)
 # In[93]:
 
 
-parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Lob', 'GR', f'{proj}_PLA_WI_EP_{country}_EUR_STATS_Lob_GR_0.parquet')
+parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Lob', 'GR', f'{proname}_STATS_Lob_GR_0.parquet')
 process_lob_stats(parquet_files_gr, parquet_file_path)
 
 
@@ -2205,7 +2194,7 @@ def process_portfolio_stats(parquet_files, export_path):
 
 #GU
 
-parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Portfolio', 'GU', f'{proj}_PLA_WI_EP_{country}_EUR_STATS_Portfolio_GU_0.parquet')
+parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Portfolio', 'GU', f'{proname}_STATS_Portfolio_GU_0.parquet')
 process_portfolio_stats(parquet_files, parquet_file_path)
 
 
@@ -2218,7 +2207,7 @@ process_portfolio_stats(parquet_files, parquet_file_path)
 # In[107]:
 
 
-parquet_file_path_gr = os.path.join(main_folder_path, 'STATS', 'Portfolio', 'GR', f'{proj}_PLA_WI_EP_{country}_EUR_STATS_Portfolio_GR_0.parquet')
+parquet_file_path_gr = os.path.join(main_folder_path, 'STATS', 'Portfolio', 'GR', f'{proname}_STATS_Portfolio_GR_0.parquet')
 process_portfolio_stats(parquet_files_gr, parquet_file_path_gr)
 
 
@@ -2353,7 +2342,7 @@ ordered_columns = ['PeriodId', 'EventId', 'EventDate', 'LossDate', 'Loss', 'Regi
 # In[124]:
 
 
-export_path = os.path.join(main_folder_path, 'PLT', 'Lob', 'GU', f'{proj}_PLA_WI_EP_{country}_EUR_PLT_Lob_GU_0.parquet')
+export_path = os.path.join(main_folder_path, 'PLT', 'Lob', 'GU', f'{proname}_PLT_Lob_GU_0.parquet')
 
 process_PLT_lob(parquet_files, export_path)
 
@@ -2367,7 +2356,7 @@ process_PLT_lob(parquet_files, export_path)
 # In[125]:
 
 
-export_path = os.path.join(main_folder_path, 'PLT', 'Lob', 'GR', f'{proj}_PLA_WI_EP_{country}_EUR_PLT_Lob_GR_0.parquet')
+export_path = os.path.join(main_folder_path, 'PLT', 'Lob', 'GR', f'{proname}_PLT_Lob_GR_0.parquet')
 
 process_PLT_lob(parquet_files_gr, export_path)
 
@@ -2493,7 +2482,7 @@ schema = pa.schema([
 
 
 
-export_path = os.path.join(main_folder_path, 'PLT', 'Portfolio', 'GU', f'{proj}_PLA_WI_EP_{country}_EUR_PLT_Portfolio_GU_0.parquet')
+export_path = os.path.join(main_folder_path, 'PLT', 'Portfolio', 'GU', f'{proname}_PLT_Portfolio_GU_0.parquet')
 
 process_PLT_portfolio_2(parquet_files, export_path)
 
@@ -2507,7 +2496,7 @@ process_PLT_portfolio_2(parquet_files, export_path)
 # In[129]:
 
 
-export_path = os.path.join(main_folder_path, 'PLT', 'Portfolio', 'GR', f'{proj}_PLA_WI_EP_{country}_EUR_PLT_Portfolio_GR_0.parquet')
+export_path = os.path.join(main_folder_path, 'PLT', 'Portfolio', 'GR', f'{proname}_PLT_Portfolio_GR_0.parquet')
 
 process_PLT_portfolio_2(parquet_files_gr, export_path)
 
@@ -2544,6 +2533,8 @@ print(f"Process finished in {elapsed_time:.2f} minutes")
 
 delete_folder_and_files(partial_folder_path)
 delete_folder_and_files(concatenated_folder_path)
+delete_folder_and_files(resolution_folder_path)
+delete_folder_and_files(resolution_folder_path_gr)
 delete_folder_and_files(processing_folder_path)
 
 
