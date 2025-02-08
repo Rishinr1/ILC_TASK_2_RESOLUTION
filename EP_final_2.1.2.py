@@ -31,23 +31,31 @@ flush_cache()
 
 
 output_folder_path = input("Enter the output folder path: ")
-folder_path = r'D:\RISHIN\13_ILC_resolution\input\PARQUET_FILES'
+folder_path = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GU\PeriodRange=1-250000'
 
 
 
 # In[4]:
 
 
-folder_path_gr = r'D:\RISHIN\13_ILC_TASK\input\PARQUET_FILES_GR'
+folder_path_gr = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GR\PeriodRange=1-250000'
 
 
 # In[5]:
 
 
-speriod=int(input("Enter the simulation period: "))
-samples=int(input("Enter the number of samples: "))
-proname=(input("enter file suffix example : example ILC2024_NZFL_EP_PLA"))
-region=input("enter region example : example NZD")
+# speriod=int(input("Enter the simulation period: "))
+# samples=int(input("Enter the number of samples: "))
+# proname=(input("enter file suffix example : example ILC2024_NZFL_EP_PLA "))
+# region=input("enter region example : example NZD  ")
+# database = input('Enter the database name IED2024_NZFL_PC_NZD_EDM240_ILCRun')
+
+speriod=50000
+samples=5
+proname="ILC2024_NZFL_EP_PLA"
+region="NZD"
+database = "IED2024_NZFL_PC_NZD_EDM240_ILCRun"
+
 
 
 # In[6]:
@@ -205,7 +213,7 @@ def process_parquet_files(folder_path, output_folder, server, database, batch_si
                 future.result()
 
 server = 'localhost'
-database = 'IED2024_EUWS_PC_MIX_EDM230_ILC_LOB_UPDATE_20240905'
+
 process_parquet_files(folder_path, resolution_folder_path, server, database)
 
 
@@ -369,13 +377,13 @@ def process_parquet_files_2(parquet_files, filter_string, lob_id, speriod, sampl
 
         # Convert DataFrame to Arrow Table with the specified schema
         table = pa.Table.from_pandas(final_df_EP_LOB_GU, schema=schema)
-        export_path =os.path.join(main_folder_path,'EP','Admin1_Lob',Cat)
-        parquet_file_path = os.path.join(export_path, f"{os.path.splitext(parquet_file_path)[0]}_{idx}.parquet")
-        # Count the number of underscores in the file path
         underscore_count = parquet_file_path.count('_')
 
+        export_path =os.path.join(main_folder_path,'EP','Admin1_Lob',Cat)
+        parquet_file_path = os.path.join(export_path, f"{os.path.splitext(parquet_file_path)[0]}_{idx}.parquet")
+
         # If there are 21 or more underscores, modify the file path
-        if underscore_count >= 22:
+        if underscore_count >= 9:
             parts = parquet_file_path.split('_')
             # Remove the second last part which contains the number and the underscore before it
             parts = parts[:-2] + parts[-1:]
@@ -805,13 +813,14 @@ def process_parquet_files_EP_Cresta_lob_2(parquet_files, filter_string, lob_id, 
 
         # Convert DataFrame to Arrow Table with the specified schema
         table = pa.Table.from_pandas(final_df_EP_LOB_GU, schema=schema)
+        underscore_count = parquet_file_path.count('_')
+
         export_path =os.path.join(main_folder_path,'EP','Cresta_Lob',Cat)
         parquet_file_path = os.path.join(export_path, f"{os.path.splitext(parquet_file_path)[0]}_{idx}.parquet")
         # Count the number of underscores in the file path
-        underscore_count = parquet_file_path.count('_')
 
-        # If there are 21 or more underscores, modify the file path
-        if underscore_count >= 22:
+        # If there are 9 or more underscores, modify the file path
+        if underscore_count >= 9:
             parts = parquet_file_path.split('_')
             # Remove the second last part which contains the number and the underscore before it
             parts = parts[:-2] + parts[-1:]
