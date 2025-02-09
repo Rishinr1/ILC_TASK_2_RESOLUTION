@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[2]:
 
 
 import os
@@ -16,6 +20,8 @@ import sqlalchemy as sa
 import pyodbc
 import concurrent.futures
 import re
+from concurrent.futures import ThreadPoolExecutor
+
 
 
 
@@ -30,30 +36,29 @@ def flush_cache():
 flush_cache()
 
 
-output_folder_path = input("Enter the output folder path: ")
-# folder_path = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GU\PeriodRange=1-250000'
-# folder_path_gr = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GR\PeriodRange=1-250000'
+folder_path = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GU\PeriodRange=1-250000'
+folder_path_gr = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GR\PeriodRange=1-250000'
 
-
-folder_path = r'D:\RISHIN\13_ILC_resolution\input\PARQUET_FILES'
-folder_path_gr = r'D:\RISHIN\13_ILC_TASK\input\PARQUET_FILES_GR'
+output_folder_path = r"D:\RISHIN\TESTING\TEST_9"
+# folder_path = r'D:\RISHIN\13_ILC_resolution\input\PARQUET_FILES'
+# folder_path_gr = r'D:\RISHIN\13_ILC_TASK\input\PARQUET_FILES_GR'
 
 
 
 # In[5]:
 
 
-speriod=int(input("Enter the simulation period: "))
-samples=int(input("Enter the number of samples: "))
-proname=(input("enter file suffix example : example ILC2024_NZFL_EP_PLA "))
-region=input("enter region example : example NZD  ")
-database = input('Enter the database name IED2024_NZFL_PC_NZD_EDM240_ILCRun')
+# speriod=int(input("Enter the simulation period: "))
+# samples=int(input("Enter the number of samples: "))
+# proname=(input("enter file suffix example : example ILC2024_NZFL_EP_PLA "))
+# region=input("enter region example : example NZD  ")
+# database = input('Enter the database name IED2024_NZFL_PC_NZD_EDM240_ILCRun')
 
-# speriod=50000
-# samples=5
-# proname="ILC2024_NZFL_EP_PLA"
-# region="NZD"
-# database = "IED2024_NZFL_PC_NZD_EDM240_ILCRun"
+speriod=50000
+samples=5
+proname="ILC2024_NZFL_EP_PLA"
+region="NZD"
+database = "IED2024_NZFL_PC_NZD_EDM240_ILCRun"
 
 
 
@@ -174,6 +179,8 @@ def fetch_database_data(connection):
     address_table = pa.Table.from_pandas(address_df)
     return address_table
 
+
+
 def join_dataframes(parquet_table, address_table):
     parquet_df = parquet_table.to_pandas()
     address_df = address_table.to_pandas()
@@ -247,7 +254,55 @@ delete_folder_and_files(partial_folder_path)
 delete_folder_and_files(concatenated_folder_path)
 
 
-# In[125]:
+# In[22]:
+
+
+def fetch_lobdet_data(server, database):
+    connection = connect_to_database(server, database)
+    try:
+        lobdet_query = 'SELECT LOBNAME, LOBDETID FROM lobdet'
+        lobdet_df = pd.read_sql(lobdet_query, connection)
+        lobname_to_lobid_2 = dict(zip(lobdet_df.LOBNAME, lobdet_df.LOBDETID))
+    finally:
+        connection.close()
+    return lobname_to_lobid_2
+
+
+# In[33]:
+
+
+lobname_to_lobid=fetch_lobdet_data(server, database)
+
+
+# In[7]:
+
+
+# # Initialize an empty dictionary to store LobName to LobId mappings
+#use this method when no database is invloved
+# lobname_to_lobid = {}
+
+# # Initialize an empty list to store unique rows
+# unique_rows = []
+
+# # Initialize a set to track unique LobName values
+# unique_lobnames = set()
+
+# def find_dic(file_path):
+#     table = pq.read_table(file_path)
+#     for row in table.to_pandas().itertuples(index=False):
+#         lobname = row.LobName
+#         lobid = row.LobId
+#         if lobname not in unique_lobnames:
+#             unique_lobnames.add(lobname)
+#             lobname_to_lobid[lobname] = lobid
+#             unique_rows.append(row)
+
+# # Process files in parallel
+# with ThreadPoolExecutor() as executor:
+#     executor.map(find_dic, parquet_files)
+
+
+# In[46]:
 
 
 #EP_ Admin1 Lob updated below
@@ -299,6 +354,7 @@ def process_parquet_files_2(parquet_files, filter_string, lob_id, speriod, sampl
      # Delete all non-concatenated files
     for f in intermediate_files_1:
         os.remove(f)
+    
     for idx, row in distinct_admins.iterrows():
         admin1_id = row['Admin1Id']
         admin1_name = row['Admin1Name']
@@ -332,9 +388,16 @@ def process_parquet_files_2(parquet_files, filter_string, lob_id, speriod, sampl
         fdataframe_3 = pd.DataFrame()
 
         for value in rps_values:
-            closest_index_2 = (dataframe_2['RPs'] - value).abs().idxmin()
-            fdataframe_2 = pd.concat([fdataframe_2, dataframe_2.loc[[closest_index_2]]])
-            fdataframe_3 = pd.concat([fdataframe_3, dataframe_3.loc[[closest_index_2]]])
+                                
+                closest_index_2 = (dataframe_2['RPs'] - value).abs().idxmin()
+                
+                # Assign the closest value to the new DataFrames
+                fdataframe_2 = pd.concat([fdataframe_2, dataframe_2.loc[[closest_index_2]]])
+                fdataframe_3 = pd.concat([fdataframe_3, dataframe_3.loc[[closest_index_2]]])
+                
+                # Update the closest value to match the rp value exactly
+                fdataframe_2.at[closest_index_2, 'RPs'] = float(value)
+                fdataframe_3.at[closest_index_2, 'RPs'] = float(value)
 
         fdataframe_2.rename(columns={'Max_Loss': 'OEP', 'TCE_OEP_Final': 'TCE-OEP'}, inplace=True)
         columns_to_keep_2 = ['RPs', 'Admin1Name', 'Admin1Id']
@@ -361,6 +424,7 @@ def process_parquet_files_2(parquet_files, filter_string, lob_id, speriod, sampl
         final_df_EP_LOB_GU['LOBId'] = final_df_EP_LOB_GU['LOBId'].apply(lambda x: Decimal(x))
         final_df_EP_LOB_GU['Admin1Id'] = final_df_EP_LOB_GU['Admin1Id'].astype('int64')
         final_df_EP_LOB_GU['Admin1Id'] = final_df_EP_LOB_GU['Admin1Id'].apply(lambda x: Decimal(x))
+        
 
 
         # Define the schema to match the required Parquet file schema
@@ -376,6 +440,7 @@ def process_parquet_files_2(parquet_files, filter_string, lob_id, speriod, sampl
 
         # Convert DataFrame to Arrow Table with the specified schema
         table = pa.Table.from_pandas(final_df_EP_LOB_GU, schema=schema)
+
         underscore_count = parquet_file_path.count('_')
 
         export_path =os.path.join(main_folder_path,'EP','Admin1_Lob',Cat)
@@ -392,142 +457,52 @@ def process_parquet_files_2(parquet_files, filter_string, lob_id, speriod, sampl
         pq.write_table(table, parquet_file_path)
 
         print(f"Parquet file saved successfully at {parquet_file_path}")
-
-
-
+    
     
 
-parquet_file_path_AUTO = f'{proname}_EP_Admin1_Lob_GU_1.parquet'
-parquet_file_path_AGR =  f'{proname}_EP_Admin1_Lob_GU_0.parquet'
-parquet_file_path_COM =  f'{proname}_EP_Admin1_Lob_GU_2.parquet'
-parquet_file_path_IND =  f'{proname}_EP_Admin1_Lob_GU_3.parquet'
-parquet_file_path_SPER =  f'{proname}_EP_Admin1_Lob_GU_4.parquet'
-parquet_file_path_FRST=  f'{proname}_EP_Admin1_Lob_GU_5.parquet'
-parquet_file_path_GLH = f'{proname}_EP_Admin1_Lob_GU_6.parquet'
+
 
 rps_values = [10000, 5000, 1000, 500, 250, 200, 100, 50, 25, 10, 5, 2]
 
 
 
+#GU
+for i, (lobname, lobid) in enumerate(lobname_to_lobid.items()):
+    parquet_file_path = f'{proname}_EP_Admin1_Lob_GU_{i}.parquet'
+    try:
+        process_parquet_files_2(parquet_files_grp, lobname, lobid, speriod, samples, rps_values, parquet_file_path, "GU")
+    except (NameError, AttributeError, ValueError) as e:
+        print(f"Error processing {lobname}: {e}")
+        pass
 
-try:
-    process_parquet_files_2(parquet_files_grp,  'AGR', 1, speriod, samples, rps_values, parquet_file_path_AGR,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AGR: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp, 'AUTO', 2, speriod, samples, rps_values, parquet_file_path_AUTO,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AUTO: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp,  'COM', 3, speriod, samples, rps_values, parquet_file_path_COM,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing COM: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp, 'IND', 4, speriod, samples, rps_values, parquet_file_path_IND,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing IND: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp, 'SPER', 5, speriod, samples, rps_values, parquet_file_path_SPER,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing SPER: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp,  'FRST', 6, speriod, samples, rps_values, parquet_file_path_FRST,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing FRST: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp,  'GLH', 7, speriod, samples, rps_values, parquet_file_path_GLH,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing GLH: {e}")
-    pass
-
-parquet_file_path_AUTO = f'{proname}_EP_Admin1_Lob_GR_1.parquet'
-parquet_file_path_AGR =  f'{proname}_EP_Admin1_Lob_GR_0.parquet'
-parquet_file_path_COM =  f'{proname}_EP_Admin1_Lob_GR_2.parquet'
-parquet_file_path_IND =  f'{proname}_EP_Admin1_Lob_GR_3.parquet'
-parquet_file_path_SPER =  f'{proname}_EP_Admin1_Lob_GR_4.parquet'
-parquet_file_path_FRST=  f'{proname}_EP_Admin1_Lob_GR_5.parquet'
-parquet_file_path_GLH = f'{proname}_EP_Admin1_Lob_GR_6.parquet'
 
 #for GR
-try:
-    process_parquet_files_2(parquet_files_grp_gr,  'AGR', 1, speriod, samples, rps_values, parquet_file_path_AGR,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AGR: {e}")
-    pass
+    
+for i, (lobname, lobid) in enumerate(lobname_to_lobid.items()):
+    parquet_file_path = f'{proname}_EP_Admin1_Lob_GR_{i}.parquet'
+    try:
+        process_parquet_files_2(parquet_files_grp, lobname, lobid, speriod, samples, rps_values, parquet_file_path, "GR")
+    except (NameError, AttributeError, ValueError) as e:
+        print(f"Error processing {lobname}: {e}")
+        pass
 
-try:
-    process_parquet_files_2(parquet_files_grp_gr,  'AUTO', 2, speriod, samples, rps_values, parquet_file_path_AUTO,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AUTO: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp_gr, 'COM', 3, speriod, samples, rps_values, parquet_file_path_COM,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing COM: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp_gr, 'IND', 4, speriod, samples, rps_values, parquet_file_path_IND,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing IND: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp_gr,  'SPER', 5, speriod, samples, rps_values, parquet_file_path_SPER,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing SPER: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp_gr, 'FRST', 6, speriod, samples, rps_values, parquet_file_path_FRST,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing FRST: {e}")
-    pass
-
-try:
-    process_parquet_files_2(parquet_files_grp_gr, 'GLH', 7, speriod, samples, rps_values, parquet_file_path_GLH,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing GLH: {e}")
-    pass
 
 partial_folder_path = os.path.join(processing_folder_path, 'partial')
 concatenated_folder_path = os.path.join(processing_folder_path, 'concatenated')
 
 
-
-# In[ ]:
-
-
-#updated file above
+# In[40]:
 
 
-# In[130]:
+gc.collect()
 
 
-delete_folder_and_files(partial_folder_path)
-delete_folder_and_files(concatenated_folder_path)
-
-
-# In[ ]:
+# In[47]:
 
 
 #Admin 1 (portfolio)modified according to unique id
 
 
-# In[131]:
 
 
 def process_parquet_files_Port_2(parquet_files, speriod, samples, rps_values,Cat):
@@ -663,33 +638,23 @@ except (NameError, AttributeError,ValueError) as e:
     pass
 
 
-
-# In[ ]:
-
-
-#above modified according to unique id
+# In[48]:
 
 
-# In[34]:
-
+partial_folder_path = os.path.join(processing_folder_path, 'partial')
+concatenated_folder_path = os.path.join(processing_folder_path, 'concatenated')
 
 delete_folder_and_files(partial_folder_path)
 delete_folder_and_files(concatenated_folder_path)
 
 
-# In[ ]:
+# In[52]:
 
 
+#EP_ cresta Lob updated below
 
 
-
-# In[ ]:
-
-
-#EP cresta lob
-
-
-# In[128]:
+# In[129]:
 
 
 def process_parquet_files_EP_Cresta_lob_2(parquet_files, filter_string, lob_id, speriod, samples, rps_values,parquet_file_path,Cat):
@@ -735,6 +700,7 @@ def process_parquet_files_EP_Cresta_lob_2(parquet_files, filter_string, lob_id, 
      # Delete all non-concatenated files
     for f in intermediate_files_1:
         os.remove(f)
+    
     for idx, row in distinct_admins.iterrows():
         admin1_id = row['CrestaId']
         admin1_name = row['CrestaName']
@@ -768,19 +734,26 @@ def process_parquet_files_EP_Cresta_lob_2(parquet_files, filter_string, lob_id, 
         fdataframe_3 = pd.DataFrame()
 
         for value in rps_values:
-            closest_index_2 = (dataframe_2['RPs'] - value).abs().idxmin()
-            fdataframe_2 = pd.concat([fdataframe_2, dataframe_2.loc[[closest_index_2]]])
-            fdataframe_3 = pd.concat([fdataframe_3, dataframe_3.loc[[closest_index_2]]])
+                                
+                closest_index_2 = (dataframe_2['RPs'] - value).abs().idxmin()
+                
+                # Assign the closest value to the new DataFrames
+                fdataframe_2 = pd.concat([fdataframe_2, dataframe_2.loc[[closest_index_2]]])
+                fdataframe_3 = pd.concat([fdataframe_3, dataframe_3.loc[[closest_index_2]]])
+                
+                # Update the closest value to match the rp value exactly
+                fdataframe_2.at[closest_index_2, 'RPs'] = float(value)
+                fdataframe_3.at[closest_index_2, 'RPs'] = float(value)
 
         fdataframe_2.rename(columns={'Max_Loss': 'OEP', 'TCE_OEP_Final': 'TCE-OEP'}, inplace=True)
         columns_to_keep_2 = ['RPs', 'CrestaName','CrestaId']
         columns_to_melt_2 = ['OEP', 'TCE-OEP']
         melted_df_2 = fdataframe_2.melt(id_vars=columns_to_keep_2, value_vars=columns_to_melt_2, var_name='EPType', value_name='Loss')
         melted_df_2.rename(columns={'RPs': 'ReturnPeriod'}, inplace=True)
-        final_df_2 = melted_df_2[['EPType', 'Loss', 'ReturnPeriod','CrestaName','CrestaId']]
+        final_df_2 = melted_df_2[['EPType', 'Loss', 'ReturnPeriod', 'CrestaName','CrestaId']]
 
         fdataframe_3.rename(columns={'S_Sum_Loss': 'AEP', 'TCE_AEP_Final': 'TCE-AEP'}, inplace=True)
-        columns_to_keep_3 = ['RPs', 'CrestaName', 'CrestaId']
+        columns_to_keep_3 = ['RPs', 'CrestaName','CrestaId']
         columns_to_melt_3 = ['AEP', 'TCE-AEP']
         melted_df_3 = fdataframe_3.melt(id_vars=columns_to_keep_3, value_vars=columns_to_melt_3, var_name='EPType', value_name='Loss')
         melted_df_3.rename(columns={'RPs': 'ReturnPeriod'}, inplace=True)
@@ -797,6 +770,7 @@ def process_parquet_files_EP_Cresta_lob_2(parquet_files, filter_string, lob_id, 
         final_df_EP_LOB_GU['LOBId'] = final_df_EP_LOB_GU['LOBId'].apply(lambda x: Decimal(x))
         final_df_EP_LOB_GU['CrestaId'] = final_df_EP_LOB_GU['CrestaId'].astype('int64')
         final_df_EP_LOB_GU['CrestaId'] = final_df_EP_LOB_GU['CrestaId'].apply(lambda x: Decimal(x))
+        
 
 
         # Define the schema to match the required Parquet file schema
@@ -812,13 +786,13 @@ def process_parquet_files_EP_Cresta_lob_2(parquet_files, filter_string, lob_id, 
 
         # Convert DataFrame to Arrow Table with the specified schema
         table = pa.Table.from_pandas(final_df_EP_LOB_GU, schema=schema)
+
         underscore_count = parquet_file_path.count('_')
 
         export_path =os.path.join(main_folder_path,'EP','Cresta_Lob',Cat)
         parquet_file_path = os.path.join(export_path, f"{os.path.splitext(parquet_file_path)[0]}_{idx}.parquet")
-        # Count the number of underscores in the file path
 
-        # If there are 9 or more underscores, modify the file path
+        # If there are 21 or more underscores, modify the file path
         if underscore_count >= 9:
             parts = parquet_file_path.split('_')
             # Remove the second last part which contains the number and the underscore before it
@@ -829,150 +803,49 @@ def process_parquet_files_EP_Cresta_lob_2(parquet_files, filter_string, lob_id, 
         pq.write_table(table, parquet_file_path)
 
         print(f"Parquet file saved successfully at {parquet_file_path}")
+    
+    
 
 
-
-parquet_file_path_AUTO =  f'{proname}_EP_Cresta_Lob_GU_1.parquet'
-parquet_file_path_AGR = f'{proname}_EP_Cresta_Lob_GU_0.parquet'
-parquet_file_path_COM = f'{proname}_EP_Cresta_Lob_GU_2.parquet'
-parquet_file_path_IND = f'{proname}_EP_Cresta_Lob_GU_3.parquet'
-parquet_file_path_SPER = f'{proname}_EP_Cresta_Lob_GU_4.parquet'
-parquet_file_path_FRST= f'{proname}_EP_Cresta_Lob_GU_5.parquet'
-parquet_file_path_GLH = f'{proname}_EP_Cresta_Lob_GU_6.parquet'
 
 rps_values = [10000, 5000, 1000, 500, 250, 200, 100, 50, 25, 10, 5, 2]
 
 
 
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp, 'AGR', 1, speriod, samples, rps_values, parquet_file_path_AGR,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AGR: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp, 'AUTO', 2, speriod, samples, rps_values, parquet_file_path_AUTO,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AUTO: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp,  'COM', 3, speriod, samples, rps_values, parquet_file_path_COM,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing COM: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp,  'IND', 4, speriod, samples, rps_values, parquet_file_path_IND,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing IND: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp, 'SPER', 5, speriod, samples, rps_values, parquet_file_path_SPER,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing SPER: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp,  'FRST', 6, speriod, samples, rps_values, parquet_file_path_FRST,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing FRST: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp,  'GLH', 7, speriod, samples, rps_values, parquet_file_path_GLH,"GU")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing GLH: {e}")
-    pass
+#GU
+for i, (lobname, lobid) in enumerate(lobname_to_lobid.items()):
+    parquet_file_path = f'{proname}_EP_Cresta_Lob_GU_{i}.parquet'
+    try:
+        process_parquet_files_EP_Cresta_lob_2(parquet_files_grp, lobname, lobid, speriod, samples, rps_values, parquet_file_path, "GU")
+    except (NameError, AttributeError, ValueError) as e:
+        print(f"Error processing {lobname}: {e}")
+        pass
 
 
+#for GR
+    
+for i, (lobname, lobid) in enumerate(lobname_to_lobid.items()):
+    parquet_file_path = f'{proname}_EP_Cresta_Lob_GR_{i}.parquet'
+    try:
+        process_parquet_files_EP_Cresta_lob_2(parquet_files_grp, lobname, lobid, speriod, samples, rps_values, parquet_file_path, "GR")
+    except (NameError, AttributeError, ValueError) as e:
+        print(f"Error processing {lobname}: {e}")
+        pass
 
-
-
-
-#NEXT FOR GR
-
-
-
-
-parquet_file_path_AUTO =  f'{proname}_EP_Cresta_Lob_GR_1.parquet'
-parquet_file_path_AGR = f'{proname}_EP_Cresta_Lob_GR_0.parquet'
-parquet_file_path_COM = f'{proname}_EP_Cresta_Lob_GR_2.parquet'
-parquet_file_path_IND = f'{proname}_EP_Cresta_Lob_GR_3.parquet'
-parquet_file_path_SPER = f'{proname}_EP_Cresta_Lob_GR_4.parquet'
-parquet_file_path_FRST= f'{proname}_EP_Cresta_Lob_GR_5.parquet'
-parquet_file_path_GLH = f'{proname}_EP_Cresta_Lob_GR_6.parquet'
-
-
-
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp_gr,  'AGR', 1, speriod, samples, rps_values, parquet_file_path_AGR,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AGR: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp_gr,  'AUTO', 2, speriod, samples, rps_values, parquet_file_path_AUTO,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AUTO: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp_gr,  'COM', 3, speriod, samples, rps_values, parquet_file_path_COM,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing COM: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp_gr,  'IND', 4, speriod, samples, rps_values, parquet_file_path_IND,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing IND: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp_gr,  'SPER', 5, speriod, samples, rps_values, parquet_file_path_SPER,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing SPER: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp_gr, 'FRST', 6, speriod, samples, rps_values, parquet_file_path_FRST,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing FRST: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_Cresta_lob_2(parquet_files_grp_gr, 'GLH', 7, speriod, samples, rps_values, parquet_file_path_GLH,"GR")
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing GLH: {e}")
-    pass
 
 partial_folder_path = os.path.join(processing_folder_path, 'partial')
 concatenated_folder_path = os.path.join(processing_folder_path, 'concatenated')
 
+
+# In[53]:
+
+
 delete_folder_and_files(partial_folder_path)
 delete_folder_and_files(concatenated_folder_path)
-
-
-
-
-# In[41]:
-
-
 flush_cache()
 
 
-# In[132]:
-
-
-delete_folder_and_files(partial_folder_path)
-delete_folder_and_files(concatenated_folder_path)
-
-
-# In[135]:
+# In[54]:
 
 
 #for cresta portfolio
@@ -1135,6 +1008,9 @@ delete_folder_and_files(concatenated_folder_path)
 # In[46]:
 
 
+# In[55]:
+
+
 #now for stats
 
 
@@ -1151,16 +1027,7 @@ def process_lob_stats_Admin1_Lob(parquet_files, parquet_file_path):
     os.makedirs(concatenated_folder_path, exist_ok=True)
     aggregated_tables_lob_stats = []
 
-    # Define the mapping of LobName to LobId
-    lobname_to_lobid = {
-        'AGR': 1,
-        'AUTO': 2,
-        'COM': 3,
-        'IND': 4,
-        'SPER': 5,
-        'FRST': 6,
-        'GLH': 7
-    }
+    
 
     # Process each Parquet file individually
     for file in parquet_files:
@@ -1392,16 +1259,6 @@ def process_lob_stats_Cresta_Lob(parquet_files, parquet_file_path):
     os.makedirs(partial_folder_path, exist_ok=True)
     aggregated_tables_lob_stats = []
 
-    # Define the mapping of LobName to LobId
-    lobname_to_lobid = {
-        'AGR': 1,
-        'AUTO': 2,
-        'COM': 3,
-        'IND': 4,
-        'SPER': 5,
-        'FRST': 6,
-        'GLH': 7
-    }
 
     # Process each Parquet file individually
     for file in parquet_files:
@@ -1590,7 +1447,8 @@ delete_folder_and_files(concatenated_folder_path)
 # In[81]:
 
 
-#for EP  Lob
+# In[57]:
+
 
 def process_parquet_files_EP_lob(parquet_files, export_path, filter_string, lob_id, speriod, samples, rps_values,parquet_file_path):
     processing_folder_path = os.path.join(main_folder_path, 'processing')
@@ -1717,144 +1575,36 @@ def process_parquet_files_EP_lob(parquet_files, export_path, filter_string, lob_
     delete_folder_and_files(concatenated_folder_path)
 
 
-#FOR GU
+#GU
+for i, (lobname, lobid) in enumerate(lobname_to_lobid.items()):
+    export_path =os.path.join(main_folder_path, 'EP', 'Lob','GU')
+
+    parquet_file_path = f'{proname}_EP_Lob_GU_{i}.parquet'
+    try:
+        process_parquet_files_EP_lob(parquet_files_grp,export_path, lobname, lobid, speriod, samples, rps_values, parquet_file_path)
+    except (NameError, AttributeError, ValueError) as e:
+        print(f"Error processing {lobname}: {e}")
+        pass
 
 
-# In[76]:
+#for GR
+    
+for i, (lobname, lobid) in enumerate(lobname_to_lobid.items()):
+    export_path =os.path.join(main_folder_path, 'EP', 'Lob','GR')
 
+    parquet_file_path = f'{proname}_EP_Lob_GR_{i}.parquet'
+    try:
+        process_parquet_files_EP_lob(parquet_files_grp,export_path, lobname, lobid, speriod, samples, rps_values, parquet_file_path)
+    except (NameError, AttributeError, ValueError) as e:
+        print(f"Error processing {lobname}: {e}")
+        pass
 
-export_path =os.path.join(main_folder_path, 'EP', 'Lob','GU')
-parquet_file_path_AUTO = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_1.parquet')
-parquet_file_path_AGR = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_0.parquet')
-parquet_file_path_COM = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_2.parquet')
-parquet_file_path_IND = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_3.parquet')
-parquet_file_path_SPER = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_4.parquet')
-parquet_file_path_FRST= os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_5.parquet')
-parquet_file_path_GLH = os.path.join(export_path, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GU_6.parquet')
-
-rps_values = [10000, 5000, 1000, 500, 250, 200, 100, 50, 25, 10, 5, 2]
-
-
-
-
-try:
-    process_parquet_files_EP_lob(parquet_files, export_path, 'AGR', 1, speriod, samples, rps_values, parquet_file_path_AGR)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AGR: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files, export_path, 'AUTO', 2, speriod, samples, rps_values, parquet_file_path_AUTO)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AUTO: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files, export_path, 'COM', 3, speriod, samples, rps_values, parquet_file_path_COM)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing COM: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files, export_path, 'IND', 4, speriod, samples, rps_values, parquet_file_path_IND)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing IND: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files, export_path, 'SPER', 5, speriod, samples, rps_values, parquet_file_path_SPER)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing SPER: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files, export_path, 'FRST', 6, speriod, samples, rps_values, parquet_file_path_FRST)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing FRST: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files, export_path, 'GLH', 7, speriod, samples, rps_values, parquet_file_path_GLH)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing GLH: {e}")
-    pass
-
-
-
-
-# In[ ]:
-
-
-#NEXT FOR GR
-
-
-# In[77]:
-
-
-export_path_gr =os.path.join(main_folder_path, 'EP', 'Lob','GR')
-parquet_file_path_AUTO = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_1.parquet')
-parquet_file_path_AGR = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_0.parquet')
-parquet_file_path_COM = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_2.parquet')
-parquet_file_path_IND = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_3.parquet')
-parquet_file_path_SPER = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_4.parquet')
-parquet_file_path_FRST= os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_5.parquet')
-parquet_file_path_GLH = os.path.join(export_path_gr, 'ILC2024_EUWS_PLA_WI_EP_BE_EUR_EP_Lob_GR_6.parquet')
-
-
-
-
-
-try:
-    process_parquet_files_EP_lob(parquet_files_gr, export_path, 'AGR', 1, speriod, samples, rps_values, parquet_file_path_AGR)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AGR: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files_gr, export_path, 'AUTO', 2, speriod, samples, rps_values, parquet_file_path_AUTO)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing AUTO: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files_gr, export_path, 'COM', 3, speriod, samples, rps_values, parquet_file_path_COM)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing COM: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files_gr, export_path, 'IND', 4, speriod, samples, rps_values, parquet_file_path_IND)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing IND: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files_gr, export_path, 'SPER', 5, speriod, samples, rps_values, parquet_file_path_SPER)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing SPER: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files_gr, export_path, 'FRST', 6, speriod, samples, rps_values, parquet_file_path_FRST)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing FRST: {e}")
-    pass
-
-try:
-    process_parquet_files_EP_lob(parquet_files_gr, export_path, 'GLH', 7, speriod, samples, rps_values, parquet_file_path_GLH)
-except (NameError, AttributeError,ValueError) as e:
-    print(f"Error processing GLH: {e}")
-    pass
 
 partial_folder_path = os.path.join(processing_folder_path, 'partial')
 concatenated_folder_path = os.path.join(processing_folder_path, 'concatenated')
 
-delete_folder_and_files(partial_folder_path)
-delete_folder_and_files(concatenated_folder_path)
 
-
-
-# In[82]:
+# In[58]:
 
 
 def process_parquet_files_Port(parquet_files, export_path, speriod, samples, rps_values,parquet_file_path):
@@ -1967,13 +1717,11 @@ def process_parquet_files_Port(parquet_files, export_path, speriod, samples, rps
 
 
 
-# In[ ]:
 
 
 #FOR GU
 
 
-# In[86]:
 
 
 export_path =os.path.join(main_folder_path, 'EP', 'Portfolio','GU')
@@ -1988,13 +1736,10 @@ except (NameError, AttributeError,ValueError) as e:
 
 
 
-# In[ ]:
-
 
 #FOR GR
 
 
-# In[87]:
 
 
 export_path_GR =os.path.join(main_folder_path,'EP','Portfolio','GR')
@@ -2008,12 +1753,11 @@ except (NameError, AttributeError,ValueError) as e:
 
 
 
-
-
-
-
 delete_folder_and_files(partial_folder_path)
 delete_folder_and_files(concatenated_folder_path)
+
+
+# In[59]:
 
 
 #now for stats LOB GU 
@@ -2023,16 +1767,6 @@ delete_folder_and_files(concatenated_folder_path)
 def process_lob_stats(parquet_files, parquet_file_path):
     partial_folder_path = os.path.join(processing_folder_path, 'partial')
     os.makedirs(partial_folder_path, exist_ok=True)
-    # Define the mapping of LobName to LobId
-    lobname_to_lobid = {
-        'AGR': 1,
-        'AUTO': 2,
-        'COM': 3,
-        'IND': 4,
-        'SPER': 5,
-        'FRST': 6,
-        'GLH': 7
-    }
 
     # Process each Parquet file individually
     for file in parquet_files:
@@ -2129,7 +1863,8 @@ parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Lob', 'GR', f'{pron
 process_lob_stats(parquet_files_gr, parquet_file_path)
 
 
-# In[ ]:
+
+# In[60]:
 
 
 #Portfolio STATS 
@@ -2341,13 +2076,11 @@ ordered_columns = ['PeriodId', 'EventId', 'EventDate', 'LossDate', 'Loss', 'Regi
 
 
 
-# In[123]:
 
 
 #for GU
 
 
-# In[124]:
 
 
 export_path = os.path.join(main_folder_path, 'PLT', 'Lob', 'GU', f'{proname}_PLT_Lob_GU_0.parquet')
@@ -2355,13 +2088,11 @@ export_path = os.path.join(main_folder_path, 'PLT', 'Lob', 'GU', f'{proname}_PLT
 process_PLT_lob(parquet_files, export_path)
 
 
-# In[121]:
 
 
 #for GR
 
 
-# In[125]:
 
 
 export_path = os.path.join(main_folder_path, 'PLT', 'Lob', 'GR', f'{proname}_PLT_Lob_GR_0.parquet')
@@ -2369,7 +2100,6 @@ export_path = os.path.join(main_folder_path, 'PLT', 'Lob', 'GR', f'{proname}_PLT
 process_PLT_lob(parquet_files_gr, export_path)
 
 
-# In[ ]:
 
 
 flush_cache()
@@ -2377,13 +2107,11 @@ flush_cache()
 
 
 
-# In[90]:
 
 
 flush_cache()
 
 
-# In[ ]:
 
 
 #PLT Portfolio
@@ -2495,13 +2223,11 @@ export_path = os.path.join(main_folder_path, 'PLT', 'Portfolio', 'GU', f'{pronam
 process_PLT_portfolio_2(parquet_files, export_path)
 
 
-# In[ ]:
 
 
 #FOR GR
 
 
-# In[129]:
 
 
 export_path = os.path.join(main_folder_path, 'PLT', 'Portfolio', 'GR', f'{proname}_PLT_Portfolio_GR_0.parquet')
@@ -2536,7 +2262,6 @@ elapsed_time = (end_time - start_time) / 60  # Convert seconds to minutes
 print(f"Process finished in {elapsed_time:.2f} minutes")
 
 
-# In[93]:
 
 
 delete_folder_and_files(partial_folder_path)
@@ -2544,6 +2269,7 @@ delete_folder_and_files(concatenated_folder_path)
 delete_folder_and_files(resolution_folder_path)
 delete_folder_and_files(resolution_folder_path_gr)
 delete_folder_and_files(processing_folder_path)
+
 
 
 # In[ ]:
