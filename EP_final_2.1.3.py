@@ -1563,6 +1563,7 @@ def process_parquet_files_EP_lob(parquet_files, export_path, filter_string, lob_
 
     # Convert DataFrame to Arrow Table with the specified schema
     table = pa.Table.from_pandas(final_df_EP_LOB_GU, schema=schema)
+    parquet_file_path = os.path.join(export_path, parquet_file_path)
 
     # Save to Parquet
     pq.write_table(table, parquet_file_path)
