@@ -39,7 +39,7 @@ flush_cache()
 folder_path = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GU\PeriodRange=1-250000'
 folder_path_gr = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GR\PeriodRange=1-250000'
 
-output_folder_path = r"D:\RISHIN\TESTING\TEST_9"
+output_folder_path = r"D:\RISHIN\TESTING\TEST_11"
 # folder_path = r'D:\RISHIN\13_ILC_resolution\input\PARQUET_FILES'
 # folder_path_gr = r'D:\RISHIN\13_ILC_TASK\input\PARQUET_FILES_GR'
 
@@ -1094,8 +1094,8 @@ def process_lob_stats_Admin1_Lob(parquet_files, parquet_file_path):
         pa.field('CV', pa.float64()),
         pa.field('Admin1Id', pa.decimal128(38)),
         pa.field('Admin1Name', pa.string()),
-        pa.field('LobName', pa.string()),
-        pa.field('LobId', pa.decimal128(38)),
+        pa.field('LOBName', pa.string()),
+        pa.field('LOBId', pa.decimal128(38)),
 
     ])
 
@@ -1318,8 +1318,8 @@ def process_lob_stats_Cresta_Lob(parquet_files, parquet_file_path):
         pa.field('CV', pa.float64()),
         pa.field('CrestaId', pa.decimal128(38)),
         pa.field('CrestaName', pa.string()),
-        pa.field('LobName', pa.string()),
-        pa.field('LobId', pa.decimal128(38)),
+        pa.field('LOBName', pa.string()),
+        pa.field('LOBId', pa.decimal128(38)),
        
     ])
 
@@ -1824,7 +1824,7 @@ def process_lob_stats(parquet_files, parquet_file_path):
         pa.field('AAL', pa.float64()),
         pa.field('Std', pa.float64()),
         pa.field('CV', pa.float64()),
-        pa.field('LobId', pa.decimal128(38)),
+        pa.field('LobID', pa.decimal128(38)),
         pa.field('LobName', pa.string())
     ])
 
@@ -2254,13 +2254,39 @@ process_PLT_portfolio_2(parquet_files_gr, export_path)
 # print(f"Replaced '{folder_to_zip}' with '{output_zip}.zip'")
 
 
+def concatenate_parquet_files(main_folder_path):
+    subfolders = [
+        'EP/Admin1_Lob/GU',
+        'EP/Admin1_Lob/GR',
+        'EP/Cresta_Lob/GU',
+        'EP/Cresta_Lob/GR'
+    ]
+
+    for subfolder in subfolders:
+        folder_path = os.path.join(main_folder_path, subfolder)
+        files = [f for f in os.listdir(folder_path) if f.endswith('.parquet')]
+        
+        file_groups = {}
+        for file in files:
+            parts = file.split('_')
+            if len(parts) >= 9:
+                key = parts[8]
+                if key not in file_groups:
+                    file_groups[key] = []
+                file_groups[key].append(file)
+        
+        for key, group_files in file_groups.items():
+            tables = [pq.read_table(os.path.join(folder_path, f)) for f in group_files]
+            concatenated_table = pa.concat_tables(tables)
+            new_file_name = '_'.join(group_files[0].split('_')[:8]) + f'_{key}.parquet'
+            pq.write_table(concatenated_table, os.path.join(folder_path, new_file_name))
+            
+            for file in group_files:
+                os.remove(os.path.join(folder_path, file))
+
+concatenate_parquet_files(main_folder_path)
 
 
-
-end_time = time.time()  # End time
-elapsed_time = (end_time - start_time) / 60  # Convert seconds to minutes
-
-print(f"Process finished in {elapsed_time:.2f} minutes")
 
 
 
@@ -2272,6 +2298,10 @@ delete_folder_and_files(resolution_folder_path_gr)
 delete_folder_and_files(processing_folder_path)
 
 
+end_time = time.time()  # End time
+elapsed_time = (end_time - start_time) / 60  # Convert seconds to minutes
+
+print(f"Process finished in {elapsed_time:.2f} minutes")
 
 # In[ ]:
 
