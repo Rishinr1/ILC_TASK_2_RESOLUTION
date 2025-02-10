@@ -50,7 +50,7 @@ output_folder_path = r"D:\RISHIN\TESTING\TEST_9"
 
 # speriod=int(input("Enter the simulation period: "))
 # samples=int(input("Enter the number of samples: "))
-# proname=(input("enter file suffix example : example ILC2024_NZFL_EP_PLA "))
+# proname=(input("enter file suffix example : example ILC2024_NZFL_EP_PLA suffix should have only 3 "_" ))
 # region=input("enter region example : example NZD  ")
 # database = input('Enter the database name IED2024_NZFL_PC_NZD_EDM240_ILCRun')
 
