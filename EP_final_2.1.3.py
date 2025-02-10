@@ -1086,6 +1086,8 @@ def process_lob_stats_Admin1_Lob(parquet_files, parquet_file_path):
 
     # Reorder the columns to match the specified format
     final_df_STATS_Lob = final_df_STATS_Lob[['AAL', 'Std', 'CV', 'LobId', 'LobName','Admin1Name','Admin1Id']]
+    final_df_STATS_Lob["LOBId"] = final_df_STATS_Lob["LobId"]
+    final_df_STATS_Lob["LOBName"]=final_df_STATS_Lob["LobName"]
 
     # Define the desired schema
     desired_schema = pa.schema([
@@ -1310,6 +1312,8 @@ def process_lob_stats_Cresta_Lob(parquet_files, parquet_file_path):
 
     # Reorder the columns to match the specified format
     final_df_STATS_Lob = final_df_STATS_Lob[['AAL', 'Std', 'CV', 'LobId', 'LobName','CrestaName','CrestaId']]
+    final_df_STATS_Lob["LOBId"] = final_df_STATS_Lob["LobId"]
+    final_df_STATS_Lob["LOBName"]=final_df_STATS_Lob["LobName"]
 
     # Define the desired schema
     desired_schema = pa.schema([
@@ -1824,7 +1828,7 @@ def process_lob_stats(parquet_files, parquet_file_path):
         pa.field('AAL', pa.float64()),
         pa.field('Std', pa.float64()),
         pa.field('CV', pa.float64()),
-        pa.field('LobID', pa.decimal128(38)),
+        pa.field('LobId', pa.decimal128(38)),
         pa.field('LobName', pa.string())
     ])
 
