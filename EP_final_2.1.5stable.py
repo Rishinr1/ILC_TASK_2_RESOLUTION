@@ -1,13 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
 
-# In[8]:
-
-
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
 
 
 import os
@@ -45,7 +36,7 @@ flush_cache()
 folder_path = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GU\PeriodRange=1-250000'
 folder_path_gr = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GR\PeriodRange=1-250000'
 
-output_folder_path = r"D:\RISHIN\TESTING\TEST_15"
+output_folder_path = r"D:\RISHIN\TESTING\TEST_16"
 # folder_path = r'D:\RISHIN\13_ILC_resolution\input\PARQUET_FILES'
 # folder_path_gr = r'D:\RISHIN\13_ILC_TASK\input\PARQUET_FILES_GR'
 
@@ -938,7 +929,7 @@ for i, (lobname, lobid) in enumerate(lobname_to_lobid.items()):
 for i, (lobname, lobid) in enumerate(lobname_to_lobid.items()):
     parquet_file_path = f'{proname}_{region}_EP_Cresta_Lob_GR_{i}.parquet'
     try:
-        process_parquet_files_EP_Cresta_lob_2(parquet_files_grp, lobname, lobid, speriod, samples, rps_values, parquet_file_path, "GR")
+        process_parquet_files_EP_Cresta_lob_2(parquet_files_grp_gr, lobname, lobid, speriod, samples, rps_values, parquet_file_path, "GR")
     except (NameError, AttributeError, ValueError) as e:
         print(f"Error processing {lobname}: {e}")
         pass
