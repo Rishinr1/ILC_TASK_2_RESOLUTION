@@ -1352,14 +1352,14 @@ def process_portfolio_stats_Admin1(parquet_files, export_path):
 
 #GU
 
-parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Admin1', 'GU', f'{proname}_STATS_Admin1_GU_0.parquet')
+parquet_file_path = os.path.join(main_folder_path, 'STATS', 'Admin1', 'GU', f'{proname}_{region}_STATS_Admin1_GU_0.parquet')
 process_portfolio_stats_Admin1(parquet_files_grp, parquet_file_path)
 
 #GR.
 
 
 flush_cache()
-parquet_file_path_gr = os.path.join(main_folder_path, 'STATS', 'Admin1', 'GR', f'{proname}_STATS_Admin1_GR_0.parquet')
+parquet_file_path_gr = os.path.join(main_folder_path, 'STATS', 'Admin1', 'GR', f'{proname}_{region}_STATS_Admin1_GR_0.parquet')
 process_portfolio_stats_Admin1(parquet_files_grp_gr, parquet_file_path_gr)
 
 
