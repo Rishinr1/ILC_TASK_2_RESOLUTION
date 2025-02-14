@@ -250,13 +250,9 @@ process_parquet_files(folder_path_gr, resolution_folder_path_gr, server, databas
 parquet_files_grp = [os.path.join(resolution_folder_path, f) for f in os.listdir(resolution_folder_path) if f.endswith('.parquet')]
 
 
-# In[16]:
-
-
 parquet_files_grp_gr = [os.path.join(resolution_folder_path_gr, f) for f in os.listdir(resolution_folder_path_gr) if f.endswith('.parquet')]
 
 
-# In[97]:
 
 
 delete_folder_and_files(partial_folder_path)

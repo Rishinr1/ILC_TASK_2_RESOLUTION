@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[19]:
+# In[8]:
 
 
 #!/usr/bin/env python
@@ -78,15 +78,7 @@ database = "IED2024_NZFL_PC_NZD_EDM240_ILCRun"
 hiphen_count=proname.count('_') + 7 #delete this if aint working
 
 
-
-# In[6]:
-
-
 parquet_files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.parquet')]
-
-
-# In[7]:
-
 
 parquet_files_gr = [os.path.join(folder_path_gr, f) for f in os.listdir(folder_path_gr) if f.endswith('.parquet')]
 
@@ -245,7 +237,36 @@ process_parquet_files(folder_path, resolution_folder_path, server, database)
 process_parquet_files(folder_path_gr, resolution_folder_path_gr, server, database)
 
 
-# In[76]:
+# In[2]:
+
+
+parquet_files_grp = [os.path.join(resolution_folder_path, f) for f in os.listdir(resolution_folder_path) if f.endswith('.parquet')]
+parquet_files_grp_gr = [os.path.join(resolution_folder_path_gr, f) for f in os.listdir(resolution_folder_path_gr) if f.endswith('.parquet')]
+
+delete_folder_and_files(partial_folder_path)
+delete_folder_and_files(concatenated_folder_path)
+
+# In[22]:
+
+
+def fetch_lobdet_data(server, database):
+    connection = connect_to_database(server, database)
+    try:
+        lobdet_query = 'SELECT LOBNAME, LOBDETID FROM lobdet'
+        lobdet_df = pd.read_sql(lobdet_query, connection)
+        lobname_to_lobid_2 = dict(zip(lobdet_df.LOBNAME, lobdet_df.LOBDETID))
+    finally:
+        connection.close()
+    return lobname_to_lobid_2
+
+
+# In[33]:
+
+
+lobname_to_lobid=fetch_lobdet_data(server, database)
+
+
+# In[9]:
 
 
 #EP_admin_lob
@@ -474,7 +495,7 @@ for i, (lobname, lobid) in enumerate(lobname_to_lobid.items()):
 for i, (lobname, lobid) in enumerate(lobname_to_lobid.items()):
     parquet_file_path = f'{proname}_{region}_EP_Admin1_Lob_GR_{i}.parquet'
     try:
-        process_parquet_files_2(parquet_files_grp, lobname, lobid, speriod, samples, rps_values, parquet_file_path, "GR")
+        process_parquet_files_2(parquet_files_grp_gr, lobname, lobid, speriod, samples, rps_values, parquet_file_path, "GR")
     except (NameError, AttributeError, ValueError) as e:
         print(f"Error processing {lobname}: {e}")
         pass
