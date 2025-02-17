@@ -33,31 +33,27 @@ def flush_cache():
 flush_cache()
 
 
-folder_path = r'D:\RISHIN\13_ILC_resolution\input\PLT_npla\GU\PeriodRange=1-250000'
-folder_path_gr = r'D:\RISHIN\13_ILC_resolution\input\PLT_npla\GR\PeriodRange=1-250000'
+folder_path = r'D:\RISHIN\13_ILC_resolution\input\PLT_npla\GU\PeriodRange=1-250000' # enter teh path of the parquet files GU
+folder_path_gr = r'D:\RISHIN\13_ILC_resolution\input\PLT_npla\GR\PeriodRange=1-250000'# enter teh path of the parquet files GR
+output_folder_path = r"D:\RISHIN\TESTING\TEST_17"   # enter the path where the output files should be saved
+speriod=50000   # enter the simulation period
+samples=5       # enter the number of samples
+pla1="nPLA"    # enter PLA or nPLA
+proname=f"ILC2024_NZFL_EP_{pla1}" #ENTER suffix befiore PLA
+currency="NZD" #enter currency
+region=currency
+database = "IED2024_NZFL_PC_NZD_EDM240_ILCRun"#enter attached database name
 
-output_folder_path = r"D:\RISHIN\TESTING\TEST_17"
+
+
 # folder_path = r'D:\RISHIN\13_ILC_resolution\input\PARQUET_FILES'
 # folder_path_gr = r'D:\RISHIN\13_ILC_TASK\input\PARQUET_FILES_GR'
-
-
-
-# In[5]:
-
 
 # speriod=int(input("Enter the simulation period: "))
 # samples=int(input("Enter the number of samples: "))
 # proname=(input("enter file suffix example : example ILC2024_NZFL_EP_PLA suffix should have only 3 "_" ))
 # region=input("enter region example : example NZD  ")
 # database = input('Enter the database name IED2024_NZFL_PC_NZD_EDM240_ILCRun')
-
-speriod=50000
-samples=5
-pla1="nPLA"
-proname=f"ILC2024_NZFL_EP_{pla1}"
-currency="EUR"
-region=currency
-database = "IED2024_NZFL_PC_NZD_EDM240_ILCRun"
 
 # proname="ILC2024_EUWS_PLA_WI_EP_BE"
 # currency="EUR"
