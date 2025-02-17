@@ -33,10 +33,10 @@ def flush_cache():
 flush_cache()
 
 
-folder_path = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GU\PeriodRange=1-250000'
-folder_path_gr = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GR\PeriodRange=1-250000'
+folder_path = r'D:\RISHIN\13_ILC_resolution\input\PLT_npla\GU\PeriodRange=1-250000'
+folder_path_gr = r'D:\RISHIN\13_ILC_resolution\input\PLT_npla\GR\PeriodRange=1-250000'
 
-output_folder_path = r"D:\RISHIN\TESTING\TEST_16"
+output_folder_path = r"D:\RISHIN\TESTING\TEST_17"
 # folder_path = r'D:\RISHIN\13_ILC_resolution\input\PARQUET_FILES'
 # folder_path_gr = r'D:\RISHIN\13_ILC_TASK\input\PARQUET_FILES_GR'
 
@@ -53,11 +53,10 @@ output_folder_path = r"D:\RISHIN\TESTING\TEST_16"
 
 speriod=50000
 samples=5
-pla1="PLA"
+pla1="nPLA"
 proname=f"ILC2024_NZFL_EP_{pla1}"
 currency="EUR"
 region=currency
-region="NZD"
 database = "IED2024_NZFL_PC_NZD_EDM240_ILCRun"
 
 # proname="ILC2024_EUWS_PLA_WI_EP_BE"
@@ -317,7 +316,6 @@ def process_parquet_files_2(parquet_files, filter_string, lob_id, speriod, sampl
         dataframe_2 = dataframe_2.sort_values(by='Max_Loss', ascending=False).reset_index(drop=True)
 
         dataframe_2['rate'] = (1 / (speriod * samples))
-        dataframe_2['cumrate'] = dataframe_2['rate'].cumsum().round(6)
         # Compute cumulative rate and RPs
         dataframe_2['cumrate'] = dataframe_2['rate'].cumsum().round(6)
         dataframe_2['RPs'] = (1 / dataframe_2['cumrate'])
