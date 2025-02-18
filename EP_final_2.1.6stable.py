@@ -33,13 +33,20 @@ def flush_cache():
 flush_cache()
 
 
-folder_path = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GU\PeriodRange=1-250000' # enter teh path of the parquet files GU
-folder_path_gr =r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GR\PeriodRange=1-250000'# enter teh path of the parquet files GR
+folder_path = r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GU\PeriodRange=1-250000' # enter the path of the parquet files GU
+folder_path_gr =r'D:\RISHIN\14_2_1ILC_NZFL\PLT\Risk_Lob\GR\PeriodRange=1-250000'# enter the path of the parquet files GR
 output_folder_path = r"D:\RISHIN\TESTING\TEST_8"   # enter the path where the output files should be saved
 speriod=50000   # enter the simulation period
 samples=5       # enter the number of samples
-pla1="PLA"    # enter PLA or nPLA
-proname=f"ILC2024_NZFL_EP_{pla1}" #ENTER suffix befiore PLA
+amplification="PLA"    # enter PLA or nPLA
+ILCYEAR = "ILC2024"   # enter ILC and YEAR
+ILCNAME = "NZFL"  # ILC NAME 
+ANALYSIS_TYPE="EP" # enter EP or HIST
+subperil = "" # enter subperil if any and you can order the suffix as you require
+
+
+proname = f"{ILCYEAR}_{ILCNAME}_{ANALYSIS_TYPE}_{amplification}" # order the suffix as you require ,# add subperil also if any by adding extra _{subperil}  ..donot add currency  
+
 currency="NZD" #enter currency
 region=currency
 database = "IED2024_NZFL_PC_NZD_EDM240_ILCRun"#enter attached database name
